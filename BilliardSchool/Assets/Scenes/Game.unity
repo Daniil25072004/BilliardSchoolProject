@@ -894,13 +894,13 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e90fb961811075c4495a645961eb60f6, type: 2}
-  - {fileID: 2100000, guid: e90fb961811075c4495a645961eb60f6, type: 2}
+  - {fileID: 2100000, guid: 45317915160c9f843946b8fb790322c3, type: 2}
+  - {fileID: 2100000, guid: 6bd93f782d1d5c74f86743ebb04b7220, type: 2}
   - {fileID: 2100000, guid: 4182bae76541a6848a0aac901aba31d0, type: 2}
+  - {fileID: 2100000, guid: ba0a8598178bbf64cb7f1e4b2637c2c0, type: 2}
+  - {fileID: 2100000, guid: f5bab075ed8a99d4eb1ff4aa607ef907, type: 2}
   - {fileID: 2100000, guid: e90fb961811075c4495a645961eb60f6, type: 2}
-  - {fileID: 2100000, guid: e90fb961811075c4495a645961eb60f6, type: 2}
-  - {fileID: 2100000, guid: e90fb961811075c4495a645961eb60f6, type: 2}
-  - {fileID: 2100000, guid: e90fb961811075c4495a645961eb60f6, type: 2}
+  - {fileID: 2100000, guid: 2e7f301c1d8927240b91599cd3d0e9cd, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1111,7 +1111,7 @@ Transform:
   m_GameObject: {fileID: 760861163}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 21.32, z: 8.01}
-  m_LocalScale: {x: 5.7, y: 5.7, z: 5.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1170043186}
@@ -1286,6 +1286,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   distanceFromTarget: 8
   whiteBall: {fileID: 760861164}
+  whiteBall_rb: {fileID: 760861165}
   poolTable: {fileID: 608380675}
   smoothenessTime: 0.2
   forwardOnCue: 5

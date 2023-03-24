@@ -92,7 +92,6 @@ public class KameraMovement : MonoBehaviour
                 mode = 0;
             }
         }
-        while(!Input.GetKey("a"));
 
         switch (mode){
             case 0:
