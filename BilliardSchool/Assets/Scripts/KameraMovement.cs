@@ -76,8 +76,8 @@ public class KameraMovement : MonoBehaviour
         
         if(Input.GetKey("b")){
 
-            whiteBall_rb.velocity = transform.forward * 10;
-
+            whiteBall_rb.velocity = (new Vector3(transform.forward.x, 0, transform.forward.z)) * 50;    //Die Vector Wombo Combo löscht den Push auf der Y-Achse. Sonst könnte man die Kugel in den Tisch pushen, da wir mit der Kamera auch von oben auf die Kugel schauen können.
+            
         }
 
     }
@@ -92,7 +92,6 @@ public class KameraMovement : MonoBehaviour
                 mode = 0;
             }
         }
-
         switch (mode){
             case 0:
                 CameraAsBirdsEye();
