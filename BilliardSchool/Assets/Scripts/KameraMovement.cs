@@ -5,9 +5,11 @@ using UnityEngine;
 public class KameraMovement : MonoBehaviour
 {
     [SerializeField] public float distanceFromTarget = 5.0f;
-    [SerializeField] private Transform whiteBall;   //Braucht den weissen Ball zur Positionierung
-    [SerializeField] private Rigidbody whiteBall_rb; //Den Ball muss man einen Impuls geben können
-    [SerializeField] private Transform poolTable;   //Den Tisch für Vogelperspektive
+    [SerializeField] private GameObject whiteBall;
+    private Transform whiteBall_tf;   //Braucht den weissen Ball zur Positionierung
+    private Rigidbody whiteBall_rb; //Den Ball muss man einen Impuls geben können
+    [SerializeField] private GameObject poolTable;   //Den Tisch für Vogelperspektive
+    private Transform pooltable_tf;
     private Vector3 nachVorne;
     private Vector3 nachVorne_richtung;
     [SerializeField] private float smoothenessTime = 0.2f;
@@ -17,12 +19,24 @@ public class KameraMovement : MonoBehaviour
     public float sensivity = 3f;
     private Vector3 smoothVelocity = Vector3.zero;
     private Vector3 currentRotation;
-    private int mode = 0;       //Diese Variable sagt, was genau die Kamera macht. 0 ist z.B. Vogelperspektive, 1 wäre die Kamera dann auf der Kugel fixiert.
+    private int mode = 1;       //Diese Variable sagt, was genau die Kamera macht. 0 ist z.B. Vogelperspektive, 1 wäre die Kamera dann auf der Kugel fixiert.
     
+    public void newScale(GameObject theGameObject, float newSize) {
+
+        float size = theGameObject.GetComponent<Renderer> ().bounds.size.y;
+        Vector3 rescale = theGameObject.transform.localScale;
+
+        rescale.y = newSize * rescale.y / size;
+
+        theGameObject.transform.localScale = rescale;
+
+    }
+
+
     void CameraAsBirdsEye(){
 
         transform.localEulerAngles = new Vector3(90, 0, 90);
-        transform.localPosition = poolTable.localPosition + new Vector3(0,80,0);
+        transform.localPosition = pooltable_tf.localPosition + new Vector3(0,200,0);
 
     }
     void CameraOnBall(){
@@ -69,7 +83,7 @@ public class KameraMovement : MonoBehaviour
         //      1.
         Transform transform_copy = transform;
         transform_copy.localEulerAngles = currentRotation;
-        nachVorne = whiteBall.position + transform_copy.forward * forwardOnCue;
+        nachVorne = whiteBall_tf.position + transform_copy.forward * forwardOnCue;
         //      2.
         transform.localEulerAngles = currentRotation + new Vector3(15, 0, 0);
         transform.position = nachVorne - (transform.forward) * distanceFromTarget;
@@ -81,9 +95,18 @@ public class KameraMovement : MonoBehaviour
         }
 
     }
+    void Start(){
 
+        whiteBall_tf = whiteBall.GetComponent<Transform>();
+        whiteBall_rb = whiteBall.GetComponent<Rigidbody>();
+        pooltable_tf = poolTable.GetComponent<Transform>();
+
+        whiteBall_tf.position = pooltable_tf.position + new Vector3(0f, 100f, 0f);
+
+    }
     void Update()
     {
+  
         if(Input.GetKey("a")){
             if(mode == 0){
                 mode = 1;
