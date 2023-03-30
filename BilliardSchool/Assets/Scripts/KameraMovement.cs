@@ -20,23 +20,12 @@ public class KameraMovement : MonoBehaviour
     private Vector3 smoothVelocity = Vector3.zero;
     private Vector3 currentRotation;
     private int mode = 1;       //Diese Variable sagt, was genau die Kamera macht. 0 ist z.B. Vogelperspektive, 1 wäre die Kamera dann auf der Kugel fixiert.
-    
-    public void newScale(GameObject theGameObject, float newSize) {
-
-        float size = theGameObject.GetComponent<Renderer> ().bounds.size.y;
-        Vector3 rescale = theGameObject.transform.localScale;
-
-        rescale.y = newSize * rescale.y / size;
-
-        theGameObject.transform.localScale = rescale;
-
-    }
 
 
     void CameraAsBirdsEye(){
 
         transform.localEulerAngles = new Vector3(90, 0, 90);
-        transform.localPosition = pooltable_tf.localPosition + new Vector3(0,200,0);
+        transform.position = pooltable_tf.position + new Vector3(0,300,0);
 
     }
     void CameraOnBall(){
@@ -90,8 +79,8 @@ public class KameraMovement : MonoBehaviour
         
         if(Input.GetKey("b")){
 
-            whiteBall_rb.velocity = (new Vector3(transform.forward.x, 0, transform.forward.z)) * 50;    //Die Vector Wombo Combo löscht den Push auf der Y-Achse. Sonst könnte man die Kugel in den Tisch pushen, da wir mit der Kamera auch von oben auf die Kugel schauen können.
-            
+            whiteBall_rb.AddForce((new Vector3(transform.forward.x, 0, transform.forward.z)) * 50);    //Die Vector Wombo Combo löscht den Push auf der Y-Achse. Sonst könnte man die Kugel in den Tisch pushen, da wir mit der Kamera auch von oben auf die Kugel schauen können.
+
         }
 
     }
@@ -100,8 +89,6 @@ public class KameraMovement : MonoBehaviour
         whiteBall_tf = whiteBall.GetComponent<Transform>();
         whiteBall_rb = whiteBall.GetComponent<Rigidbody>();
         pooltable_tf = poolTable.GetComponent<Transform>();
-
-        whiteBall_tf.position = pooltable_tf.position + new Vector3(0f, 100f, 0f);
 
     }
     void Update()

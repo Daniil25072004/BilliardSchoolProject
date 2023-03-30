@@ -20,10 +20,16 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] GameObject ball5_half;
     [SerializeField] GameObject ball6_half;
     [SerializeField] GameObject ball7_half;
+    [SerializeField] GameObject poolTable;
     private Transform[] balls_8ball = new Transform[16];
     private int gameMode = 0;   //0 = 8ball, 1 = snooker
     private Vector3[] ballSize = new Vector3[2];
     
+    private float[,] table_sizes = new float[2, 3]{{112f, 150f, 224f},{2.0f, 2.0f, 2.0f}};  
+    //0 = 8pool ball, 1 = snooker
+    //Es geht bei den Table Sizes um die innere Spielflächen und sie sind in cm angegeben. X ist die width und Z die Length
+    private Vector3 table_vonInsideZuGesScale = new Vector3(1.194458f, 1f, 1.09678f);
+
     public void startGame(){    //Funktion startet ein Spiel. Spielmodus etc in den Parameter eingeben
 
 
@@ -55,16 +61,18 @@ public class GameplayManager : MonoBehaviour
         Transform ball5_half_tf = ball5_half.GetComponent<Transform>();
         Transform ball6_half_tf = ball6_half.GetComponent<Transform>();
         Transform ball7_half_tf = ball7_half.GetComponent<Transform>();
+        Transform poolTable_tf  = poolTable.GetComponent<Transform>();
 
-        balls_8ball[0] = whiteBall_tf;
-        balls_8ball[2] = ball2_tf;
-        balls_8ball[3] = ball3_tf;
-        balls_8ball[4] = ball4_tf;
-        balls_8ball[5] = ball5_tf;
-        balls_8ball[6] = ball6_tf;
-        balls_8ball[7] = ball7_tf;
-        balls_8ball[8] = ball8_tf;
-        balls_8ball[9] = ball1_half_tf;
+        balls_8ball[0]  = whiteBall_tf;
+        balls_8ball[1]  = ball1_tf;
+        balls_8ball[2]  = ball2_tf;
+        balls_8ball[3]  = ball3_tf;
+        balls_8ball[4]  = ball4_tf;
+        balls_8ball[5]  = ball5_tf;
+        balls_8ball[6]  = ball6_tf;
+        balls_8ball[7]  = ball7_tf;
+        balls_8ball[8]  = ball8_tf;
+        balls_8ball[9]  = ball1_half_tf;
         balls_8ball[10] = ball2_half_tf;
         balls_8ball[11] = ball3_half_tf;
         balls_8ball[12] = ball4_half_tf;
@@ -72,8 +80,13 @@ public class GameplayManager : MonoBehaviour
         balls_8ball[14] = ball6_half_tf;
         balls_8ball[15] = ball7_half_tf;
 
-        for(int i = 0; i < 15; i++){
+        Pooltable_script poolTable_script = poolTable.GetComponent<Pooltable_script>(); //Assoziation auf den Script des Pooltables.
+                                                                                        //Brauchen wir, um die Funktion "setSize" zu verwenden, die die Grösse des Tisches setzt.
+        poolTable_script.setSize();
+
+        for(int i = 0; i < 16; i++){
             balls_8ball[i].localScale = ballSize[0];
+            balls_8ball[i].position = poolTable_tf.position + new Vector3(0,200,0);
         }
 
     }
