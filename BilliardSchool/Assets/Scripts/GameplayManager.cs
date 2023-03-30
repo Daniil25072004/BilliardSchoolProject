@@ -86,7 +86,7 @@ public class GameplayManager : MonoBehaviour
 
         for(int i = 0; i < 16; i++){
             balls_8ball[i].localScale = ballSize[0];
-            balls_8ball[i].position = poolTable_tf.position + new Vector3(0,200,0);
+            balls_8ball[i].position = poolTable_tf.position + new Vector3(0,170,0);
         }
 
     }
