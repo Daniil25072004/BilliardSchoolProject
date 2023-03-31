@@ -30,6 +30,12 @@ public class GameplayManager : MonoBehaviour
     //Es geht bei den Table Sizes um die innere Spielflächen und sie sind in cm angegeben. X ist die width und Z die Length
     private Vector3 table_vonInsideZuGesScale = new Vector3(1.194458f, 1f, 1.09678f);
 
+    private float ballOnTableY(){
+
+        Pooltable_script poolTable_script = poolTable.GetComponent<Pooltable_script>();
+        return poolTable_script.getGameFieldHeight() + ballSize[0].y/2;
+
+    }
     public void startGame(){    //Funktion startet ein Spiel. Spielmodus etc in den Parameter eingeben
 
 
@@ -82,13 +88,12 @@ public class GameplayManager : MonoBehaviour
 
         Pooltable_script poolTable_script = poolTable.GetComponent<Pooltable_script>(); //Assoziation auf den Script des Pooltables.
                                                                                         //Brauchen wir, um die Funktion "setSize" zu verwenden, die die Grösse des Tisches setzt.
-        poolTable_script.setSize();
+        poolTable_script.setSize(0);
 
         for(int i = 0; i < 16; i++){
             balls_8ball[i].localScale = ballSize[0];
-            balls_8ball[i].position = poolTable_tf.position + new Vector3(0,170,0);
+            balls_8ball[i].position = poolTable_tf.position + new Vector3(0, ballOnTableY(), 0);
         }
-
     }
 
     void Update()
