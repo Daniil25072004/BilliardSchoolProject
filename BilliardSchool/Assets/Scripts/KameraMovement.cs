@@ -94,7 +94,7 @@ public class KameraMovement : MonoBehaviour
     void Update()
     {
   
-        if(Input.GetKey("a")){
+        if(Input.GetKeyDown("a")){
             if(mode == 0){
                 mode = 1;
             }
