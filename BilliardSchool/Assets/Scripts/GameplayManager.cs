@@ -24,6 +24,7 @@ public class GameplayManager : MonoBehaviour
     private Transform[] balls_8ball = new Transform[16];
     private int gameMode = 0;   //0 = 8ball, 1 = snooker
     private Vector3[] ballSize = new Vector3[2];
+    [SerializeField] private float ballGroup_zOffset;   //Den Offset, wie tief bzw wie weit vorne die Kugeln beim Start des Spiels sein sollen.
     
     private float[,] table_sizes = new float[2, 3]{{112f, 150f, 224f},{2.0f, 2.0f, 2.0f}};  
     //0 = 8pool ball, 1 = snooker
@@ -45,6 +46,27 @@ public class GameplayManager : MonoBehaviour
 
         return gameMode;
 
+    }
+
+    private bool checkIfBallFull(int n){
+        //Denk dran dass diese Funktion auch einen true/false wert für die weiße Kugel zurückgibt. 
+        
+        //n < 9 geht auch, die schwarze ist auch eine volle kugel
+        if(n < 8){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    private bool invertBool(bool b){
+        if(b){
+            return false;
+        }
+        else{
+            return true;
+        }
     }
 
     void Start()
@@ -90,10 +112,158 @@ public class GameplayManager : MonoBehaviour
                                                                                         //Brauchen wir, um die Funktion "setSize" zu verwenden, die die Grösse des Tisches setzt.
         poolTable_script.setSize(0);
 
+
         for(int i = 0; i < 16; i++){
             balls_8ball[i].localScale = ballSize[0];
-            balls_8ball[i].position = poolTable_tf.position + new Vector3(0, ballOnTableY(), 0);
+            balls_8ball[i].position = poolTable_tf.position + new Vector3(0, ballOnTableY(), 40);
         }
+
+        switch(gameMode){
+            case 0:
+                
+                int safetyIndex = 0;
+
+                for(int i = 0; i < 16; i++){
+                    balls_8ball[i].localScale = ballSize[0];
+                }
+                Transform balls_8ball_row0;
+
+                Transform[] balls_8ball_row1 = new Transform[2];
+                
+                Transform[] balls_8ball_row2 = new Transform[3];
+                
+                Transform[] balls_8ball_row3 = new Transform[4];
+                
+                Transform[] balls_8ball_row4 = new Transform[5];
+
+                bool isBallFull;
+                int rnd;
+                int index;
+                bool[] ballIsUntaken = new bool[16];
+                for(int i = 0; i < 16; i++){
+                    ballIsUntaken[i] = true;
+                }
+
+                //Fängt mit der ersten Kugel (ganz vorne) an
+                while(true){
+                    //Die weiße Kugel darf nicht mitgezählt werden
+                    rnd = Random.Range(1,16);
+                    //Die schwarze auch nicht
+                    if(rnd != 8){
+                        balls_8ball_row0 = balls_8ball[rnd];
+                        ballIsUntaken[rnd] = false;
+                        if(rnd < 8){
+                            isBallFull = true;
+                        }
+                        else{
+                            isBallFull = false;
+                        }
+                        break;
+                    }
+                }
+
+                index = 0;
+                while(true){
+                    //Die weiße Kugel darf nicht mitgezählt werden
+                    rnd = Random.Range(1,16);
+                    if((rnd != 8) && (checkIfBallFull(rnd) == isBallFull) && ballIsUntaken[rnd]){
+                        balls_8ball_row1[index] = balls_8ball[rnd];
+                        ballIsUntaken[rnd] = false;
+                        //nächste Ballart (Voll oder Halb) invertieren
+                        isBallFull = invertBool(isBallFull);
+                        index++;
+                        if(index == 2) break;
+                    }
+                }
+
+                index = 0;
+                while(true){
+                    //Die weiße Kugel darf nicht mitgezählt werden
+                    rnd = Random.Range(1,16);
+                    safetyIndex++;
+                    if(index == 1){
+                        balls_8ball_row2[index] = balls_8ball[8];
+                        index++;
+                    }
+                    else{
+                        if((rnd != 8) && (checkIfBallFull(rnd) != isBallFull) && ballIsUntaken[rnd]){
+                            balls_8ball_row2[index] = balls_8ball[rnd];
+                            ballIsUntaken[rnd] = false;
+                            //nächste Ballart (Voll oder Halb) invertieren
+                            isBallFull = invertBool(isBallFull);
+                            index++;
+                            if(index == 3) break;
+                        }
+                    }
+                    
+                }
+                index = 0;
+                while(true){
+                    //Die weiße Kugel darf nicht mitgezählt werden
+                    rnd = Random.Range(1,16);
+                    if((rnd != 8) && (checkIfBallFull(rnd) != isBallFull) && ballIsUntaken[rnd]){
+                        balls_8ball_row3[index] = balls_8ball[rnd];
+                        ballIsUntaken[rnd] = false;
+                        //nächste Ballart (Voll oder Halb) invertieren
+                        if((index == 0) || (index == 2)){
+                            isBallFull = invertBool(isBallFull);    
+                        }
+                        index++;
+                        if(index == 4) break;
+                    }
+                }
+
+                bool firstCornerBall_Form = isBallFull;
+                index = 0;
+                while(true){
+                    //Die weiße Kugel darf nicht mitgezählt werden
+                    rnd = Random.Range(1,16);
+                    if((rnd != 8) && (checkIfBallFull(rnd) != isBallFull) && ballIsUntaken[rnd]){
+                        balls_8ball_row4[index] = balls_8ball[rnd];
+                        ballIsUntaken[rnd] = false;
+                        //Der Bereich zwischen den 5 Kugeln geht "an/aus" (zwischen 0 und 4)
+                        if((0 < index) && (index < 4)){
+                            isBallFull = invertBool(isBallFull);
+                        }
+                        else{
+                            //Der letzte Ball soll das Gegenteil von dem Ball der anderen Ecke sein
+                            if(index != 0)  isBallFull = !firstCornerBall_Form;
+                        }
+                        index++;
+                        if(index == 5) break;
+                    }
+                
+                }
+
+
+                //Zufällige Rotationen
+                for(int i = 0; i < 16; i++){
+                    balls_8ball[i].localEulerAngles = new Vector3(Random.Range(0f,360f), Random.Range(0f,360f), Random.Range(0f,360f));
+                }
+
+                balls_8ball[0].position = poolTable_tf.position + new Vector3(0, ballOnTableY(), -20);
+                balls_8ball_row0.position = poolTable_tf.position + new Vector3(0, ballOnTableY(), ballGroup_zOffset);
+                for(int i = 0; i < 2; i++){
+                    balls_8ball_row1[i].position = poolTable_tf.position + new Vector3(0.5f*balls_8ball_row3[i].localScale.x-balls_8ball_row3[i].localScale.x*(i), ballOnTableY(), ballGroup_zOffset + 0.5f*balls_8ball_row1[i].localScale.x/Mathf.Tan(30 * Mathf.PI / 180));
+                }
+                for(int i = 0; i < 3; i++){
+                    balls_8ball_row2[i].position = poolTable_tf.position + new Vector3(balls_8ball_row3[i].localScale.x-balls_8ball_row3[i].localScale.x*(i), ballOnTableY(), ballGroup_zOffset + balls_8ball_row2[i].localScale.x/Mathf.Tan(30 * Mathf.PI / 180));
+                }
+                for(int i = 0; i < 4; i++){
+                    balls_8ball_row3[i].position = poolTable_tf.position + new Vector3(1.5f*balls_8ball_row3[i].localScale.x-balls_8ball_row3[i].localScale.x*(i), ballOnTableY(), ballGroup_zOffset + 1.5f*balls_8ball_row3[i].localScale.x/Mathf.Tan(30 * Mathf.PI / 180));
+                }
+                for(int i = 0; i < 5; i++){
+                    balls_8ball_row4[i].position = poolTable_tf.position + new Vector3(2f*balls_8ball_row4[i].localScale.x-balls_8ball_row4[i].localScale.x*(i), ballOnTableY(), ballGroup_zOffset + 2f*balls_8ball_row4[i].localScale.x/Mathf.Tan(30 * Mathf.PI / 180));
+                }
+                break;
+            case 1:
+
+                break;
+
+        }
+
+        //Hier nur weil es noch kein "Launcher" für das spiel gibt
+        gameMode = 0;
     }
 
     void Update()
