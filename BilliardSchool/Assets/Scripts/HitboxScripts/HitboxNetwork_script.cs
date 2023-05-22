@@ -11,6 +11,7 @@ public class HitboxNetwork_script : MonoBehaviour
     [SerializeField] GameObject Hitbox4;
     [SerializeField] GameObject Hitbox5;
     [SerializeField] GameObject Hitbox6;
+    [SerializeField] GameplayManager gameplayManager;
 
     private Hitbox[] hitbox_scripts = new Hitbox[6];
 
@@ -19,9 +20,7 @@ public class HitboxNetwork_script : MonoBehaviour
     //Diese Funktion wird aufgerufen wenn eine Kugel reingefallen ist.  (String s ist der Name der Kugel und int number sagt aus, welche Hitbox ruft.)
     public void registerHitboxCollision(string s, int number){
 
-        GameObject ball = GameObject.Find(s);
-        TESTSCRIPT script = ball.GetComponent<TESTSCRIPT>();
-        //script.test();
+        gameplayManager.registerHitboxCollision(s,number);
 
     }
 

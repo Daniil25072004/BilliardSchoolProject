@@ -80,7 +80,7 @@ public class Hitbox : MonoBehaviour
                 registerHitboxCollision("Ball7_Half");
                 break;
             default:
-                Debug.Log("Kontakt mit Hitbox + " + number + ", aber unbekannt mit welchem Ball.");
+                Debug.Log("!!!  Kontakt mit Hitbox + " + number + ", aber unbekannt mit welchem Ball.");
                 break;
 
 
