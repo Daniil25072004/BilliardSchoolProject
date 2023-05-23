@@ -82,17 +82,6 @@ public class GameplayManager : MonoBehaviour
         return gameMode;
     }
 
-    private bool checkForFaultyHole(){
-        if(playerTurn == 0){
-            for(int i = 0; i < 7; i++){
-
-            }
-        }
-        else{
-
-        }
-        return false;
-    }
     private int getBallIdx(string s){
         GameObject obj = GameObject.Find(s);
         int idx = 0;
@@ -132,8 +121,8 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    private int getOtherPlayerIdx(int idx){
-        if(idx == 0){
+    private int getOtherPlayerIdx(){
+        if(playerTurn == 0){
             return 1;
         }
         else{
@@ -141,36 +130,117 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    private void addHoledBall(int player, int idx){
-        int idxOfArray = 0;
-        //Herausfinden, wie groß das Array ist.
-        while(playerBall_holed[player, idxOfArray] != 0){
-            idxOfArray++;
+    //Je nachdem, welcher Spieler gerade dran ist (playerTurn), wird diese Funktion seine eingelochten Kugeln anschauen und auswerten
+    /*
+        BESONDERE SITUATIONEN IM playerBall_holed:
+            -Es ist eine Weiße Kugel drinnen                                            (Anderer Spieler darf die Position der Weißen Kugel entscheiden)
+            -Die schwarze ist drinnen obwohl die anderen noch nicht eingelocht sind.    (Verlust der Runde)
+            -Was wenn die weiße UND schwarze eingelocht sind?
+    */
+    private bool isHoledFormCorrect(){
+        bool correctForm = true;
+        //Halbe Kugeln
+        if(playerBall_form[playerTurn] == 1){
+            for(int i = 0; i < 7; i++){
+                //Es geht hier nur darum, ob keine Kugel der anderen Form enthalten ist!    Weiß oder Schwarz ist hier erstmal egal
+                if(((7 < playerBall_holed[playerTurn,i]) == false) && playerBall_holed[playerTurn,i] != 0 && playerBall_holed[playerTurn,i] != -1){
+                    Debug.Log("Half: " + playerBall_holed[playerTurn,i] + " Playerturn: " + playerTurn + " i: " + i);
+                    correctForm = false;
+                }
+            }
         }
-        playerBall_holed[player, idxOfArray] = idx;
+        else{   //Volle Kugeln
+            for(int i = 0; i < 7; i++){
+                //Es geht hier nur darum, ob keine Kugel der anderen Form enthalten ist!    Weiß oder Schwarz ist hier erstmal egal
+                if((playerBall_holed[playerTurn,i] < 9) == false && playerBall_holed[playerTurn,i] != 0){
+                    Debug.Log("Full: " + playerBall_holed[playerTurn,i] + " Playerturn: " + playerTurn + " i: " + i);
+                    correctForm = false;
+                }
+            }
+        }
+        //Wenn die Formen noch undefiniert (0) sind, gibt die Funktion bei einlochung von der weißen und schwarzen Kugel ein true wieder. ansonsten immer ein false
+        return correctForm;
+    }
+    //idx 0 = white; idx 1 = black; Der Wert -1 bedeutet, dass die Kugel garnicht drinnen ist. Ansonsten ist der rauskommende Wert ein index für die Position im playerBall_holed der Kugel.
+    private int[] getWhiteAndBlackIdxInArray(){
+        int[] whiteAndBlack = new int[2];
+        int whiteIdx = -1;
+        int blackIdx = -1;
+        for(int i = 0; i < getAmountOfHoledBalls(); i++){
+            if(playerBall_holed[playerTurn, i] == 0){
+                whiteIdx = i;
+            }
+            if(playerBall_holed[playerTurn, i] == 8){
+                blackIdx = i;
+            }
+        }
+        whiteAndBlack[0] = whiteIdx;
+        whiteAndBlack[1] = blackIdx;
+        return whiteAndBlack;
     }
 
+    private void removeBallFromTable(int idx){
+        balls_8ball[idx].position = new Vector3(0,0,0);
+    }
+
+    //Diese Funktion wird unendlich fortfahren, wenn der Array voll mit Kugeln ist !!!
+    private int getAmountOfHoledBalls(){
+        int idxOfArray = 0;
+        while(playerBall_holed[playerTurn, idxOfArray] != -1 && idxOfArray < 7){
+            idxOfArray++;
+        }
+        return idxOfArray;
+    }
+    private void addHoledBall(int idx){
+        playerBall_holed[playerTurn, getAmountOfHoledBalls()] = idx;
+    }
+    private void switchPlayerTurn(){
+        if(playerTurn == 1){
+            playerTurn = 0;
+        }
+        else{
+            playerTurn = 1;
+        }
+    }
+
+    private void moveWhiteBall(){
+    
+    }
+    private void addPoint(int invertedPlayerTurn){
+        playerPoints[invertedPlayerTurn]++;
+        Debug.Log("Player [0]: " + playerPoints[0] + " Player [1]: " + playerPoints[1]);
+    }
     private void eightBall_registerHitboxCollision(string s, int hitbox){
         //Wurde überhaupt entschieden, welcher Spieler welche Kugel hat?
+        //Diese Abfrage wird also nur einmal geschehen.
         if(playerBall_form[playerTurn] == 0){
-            if(getBallIdx(s) != 8 && getBallIdx(s) != 0){
-                if(0 < getBallIdx(s) && getBallIdx(s) < 8){
+            if(0 < getBallIdx(s) && getBallIdx(s) < 8){
                     playerBall_form[playerTurn] = 2;
-                    playerBall_form[getOtherPlayerIdx(playerTurn)] = 1;
+                    playerBall_form[getOtherPlayerIdx()] = 1;
                 }
                 else{
                     playerBall_form[playerTurn] = 1;
-                    playerBall_form[getOtherPlayerIdx(playerTurn)] = 2;
+                    playerBall_form[getOtherPlayerIdx()] = 2;
+            }
+            Debug.Log("playerBall_form[0]: " + playerBall_form[0] + " playerBall_form[1]: " + playerBall_form[1]);
+        }
+        addHoledBall(getBallIdx(s));
+
+        if(isHoledFormCorrect()){
+            if(getWhiteAndBlackIdxInArray()[0] != -1){
+                moveWhiteBall();
+            }
+            if(getWhiteAndBlackIdxInArray()[1] != -1){
+                if(getAmountOfHoledBalls() < 7){
+                    addPoint(getOtherPlayerIdx());
                 }
             }
-            else{
-                Debug.Log("ERROR:   ERSTE KUGEL IST SCHWARZ ODER WEIß");
-            }
-            Debug.Log("playerBall_form[0]: " + playerBall_form[0]);
-            Debug.Log("playerBall_form[1]: " + playerBall_form[1]);
         }
-
-
+        else{
+            Debug.Log("Falsches Loch!");
+        }
+        removeBallFromTable(getBallIdx(s));
+        switchPlayerTurn();
     }
 
     private void eightBall_resetGameLogic(){
@@ -183,12 +253,12 @@ public class GameplayManager : MonoBehaviour
         }
         playerPoints = new int[2];
         playerBall_form = new int[2];
-        playerBall_holed = new int[2,7];
+        playerBall_holed = new int[2,8];
         for(int i = 0; i < 2; i++){
             playerPoints[i] = 0;
             playerBall_form[i] = 0;
-            for(int j = 0; j < 7; j++){
-                playerBall_holed[i, j] = 0;
+            for(int j = 0; j < 8; j++){
+                playerBall_holed[i, j] = -1;            //Leere Werte im index sollen -1 sein
             }
         }
         round = 0;
