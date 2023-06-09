@@ -14,12 +14,19 @@ public class KameraMovement : MonoBehaviour
     private Vector3 nachVorne_richtung;
     [SerializeField] private float smoothenessTime = 0.2f;
     [SerializeField] private float forwardOnCue = 20f;
+    [SerializeField] private GameObject gameplayManager;
+    private GameplayManager gameplayManager_script;
     private float rotationX = 0f;
     private float rotationY = 0f;
     public float sensivity = 3f;
     private Vector3 smoothVelocity = Vector3.zero;
     private Vector3 currentRotation;
     private int mode = 1;       //Diese Variable sagt, was genau die Kamera macht. 0 ist z.B. Vogelperspektive, 1 wäre die Kamera dann auf der Kugel fixiert.
+    //Variablen für das Kugelschießen
+    private bool isAllowedToPush = true;
+    private bool holdingPushButton = false;
+    private float queueForce = 0f;
+    private bool riseQueueForce = true;
 
 
     void CameraAsBirdsEye(){
@@ -76,24 +83,54 @@ public class KameraMovement : MonoBehaviour
         //      2.
         transform.localEulerAngles = currentRotation + new Vector3(15, 0, 0);
         transform.position = nachVorne - (transform.forward) * distanceFromTarget;
-        
-        if(Input.GetKey("b")){
 
-            whiteBall_rb.AddForce((new Vector3(transform.forward.x, 0, transform.forward.z)) * 50);    //Die Vector Wombo Combo löscht den Push auf der Y-Achse. Sonst könnte man die Kugel in den Tisch pushen, da wir mit der Kamera auch von oben auf die Kugel schauen können.
+    }
 
-        }
-
+    private float getCurrentQueueForce(){
+        return queueForce;
     }
     void Start(){
 
         whiteBall_tf = whiteBall.GetComponent<Transform>();
         whiteBall_rb = whiteBall.GetComponent<Rigidbody>();
         pooltable_tf = poolTable.GetComponent<Transform>();
+        gameplayManager_script = gameplayManager.GetComponent<GameplayManager>();
 
     }
+    void manageQueueForce(){
+        float timeForMax = gameplayManager_script.getMaxQueueForce() / gameplayManager_script.getTimeForMaxQueueForce();    // MaxForce/TimeForMaxForce = Faktor f+r deltaTime. 
+        if(riseQueueForce){
+            if(queueForce >= gameplayManager_script.getMaxQueueForce()){
+                riseQueueForce = false;
+            }
+        }
+        else{
+            if(queueForce <= 0){
+                riseQueueForce = true;
+            }
+        }
+        if(riseQueueForce){
+            queueForce += Time.deltaTime * timeForMax;
+        }
+        else{
+            queueForce -= Time.deltaTime * timeForMax;
+        }
+    }
+
+    
     void Update()
     {
-  
+        if(gameplayManager_script.playerCanMove() && holdingPushButton || Input.GetKey("b")){
+            holdingPushButton = true;
+            manageQueueForce();
+            if(Input.GetKey("b") == false){ //Kugel wird geschossen
+                gameplayManager_script.shootWhiteBall(new Vector3(transform.forward.x, 0, transform.forward.z)*queueForce);
+                //whiteBall_rb.velocity = new Vector3(transform.forward.x, 0, transform.forward.z)*queueForce;
+                holdingPushButton = false;
+                queueForce = 0f;
+            }
+        }
+        
         if(Input.GetKeyDown("a")){
             if(mode == 0){
                 mode = 1;

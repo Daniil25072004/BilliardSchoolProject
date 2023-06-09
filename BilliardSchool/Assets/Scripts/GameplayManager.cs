@@ -22,8 +22,17 @@ public class GameplayManager : MonoBehaviour
     [SerializeField] GameObject ball7_half;
     [SerializeField] GameObject poolTable;
     [SerializeField] private float ballGroup_zOffset;   //Den Offset, wie tief bzw wie weit vorne die Kugeln beim Start des Spiels sein sollen.
+    [SerializeField] private float maxQueueForce;
+    public float getMaxQueueForce(){
+        return maxQueueForce;
+    }
+    [SerializeField] private float timeForMaxQueueForce;    //In Sekunden
+    public float getTimeForMaxQueueForce(){
+        return timeForMaxQueueForce;
+    }
     private Transform[] balls_8ball = new Transform[16];
     private Vector3[] ballSize = new Vector3[2];
+    private Rigidbody whiteBall_rb;
     private int gameMode;               //0 = 8ball, 1 = snooker
     private int[] playerPoints;         //[0] = Punkte von Spieler 1        [1] = Punkte von Spieler 2
     private int playerTurn;             //idx 0 = Spieler 1         idx 1 = Spieler 2           (Wer dran ist)
@@ -31,17 +40,22 @@ public class GameplayManager : MonoBehaviour
     private int[,] playerBall_holed;    //idx 0,? = Spieler 1       idx 1,? = Spieler 2         Der Wert ist die Nummer der Kugel. 0 bedeutet keine Kugel
     private int bestOf;         //Wie oft muss ein Spieler gewinnen, dass ein Spieler komplett gewonnen hat?
     private int round;          //Welche Runde wird gerade gespielt
+    private bool playerIsAllowedToMove; //darf ein Spieler die Kugel schießen
 
     private float[,] table_sizes = new float[2, 3] { { 112f, 150f, 224f }, { 2.0f, 2.0f, 2.0f } };
     //0 = 8pool ball, 1 = snooker
     //Es geht bei den Table Sizes um die innere Spielflächen und sie sind in cm angegeben. X ist die width und Z die Length
     private Vector3 table_vonInsideZuGesScale = new Vector3(1.194458f, 1f, 1.09678f);
 
+    public void shootWhiteBall(Vector3 vel){
+        whiteBall_rb.velocity = vel;
+    }
+    public bool playerCanMove(){
+        return playerIsAllowedToMove;
+    }
     public void registerHitboxCollision(string s, int hitbox)
     {
         GameObject ball = GameObject.Find(s);
-        Debug.Log("Ball: " + s + " Hitbox: " + hitbox);
-
         switch(gameMode){
             case 0:
                 eightBall_registerHitboxCollision(s, hitbox);
@@ -49,7 +63,6 @@ public class GameplayManager : MonoBehaviour
             case 1:
                 break;
         }
-
     }
 
     private float ballOnTableY()
@@ -91,7 +104,6 @@ public class GameplayManager : MonoBehaviour
                 break;
             }
         }
-        Debug.Log("Die Kugel: " + s + " hat den Index: " + idx);
         return idx;
     }
     private bool checkIfBallFull(int n)
@@ -144,7 +156,6 @@ public class GameplayManager : MonoBehaviour
             for(int i = 0; i < 7; i++){
                 //Es geht hier nur darum, ob keine Kugel der anderen Form enthalten ist!    Weiß oder Schwarz ist hier erstmal egal
                 if(((7 < playerBall_holed[playerTurn,i]) == false) && playerBall_holed[playerTurn,i] != 0 && playerBall_holed[playerTurn,i] != -1){
-                    Debug.Log("Half: " + playerBall_holed[playerTurn,i] + " Playerturn: " + playerTurn + " i: " + i);
                     correctForm = false;
                 }
             }
@@ -153,7 +164,6 @@ public class GameplayManager : MonoBehaviour
             for(int i = 0; i < 7; i++){
                 //Es geht hier nur darum, ob keine Kugel der anderen Form enthalten ist!    Weiß oder Schwarz ist hier erstmal egal
                 if((playerBall_holed[playerTurn,i] < 9) == false && playerBall_holed[playerTurn,i] != 0){
-                    Debug.Log("Full: " + playerBall_holed[playerTurn,i] + " Playerturn: " + playerTurn + " i: " + i);
                     correctForm = false;
                 }
             }
@@ -208,7 +218,6 @@ public class GameplayManager : MonoBehaviour
     }
     private void addPoint(int invertedPlayerTurn){
         playerPoints[invertedPlayerTurn]++;
-        Debug.Log("Player [0]: " + playerPoints[0] + " Player [1]: " + playerPoints[1]);
     }
     private void eightBall_registerHitboxCollision(string s, int hitbox){
         //Wurde überhaupt entschieden, welcher Spieler welche Kugel hat?
@@ -222,25 +231,33 @@ public class GameplayManager : MonoBehaviour
                     playerBall_form[playerTurn] = 1;
                     playerBall_form[getOtherPlayerIdx()] = 2;
             }
-            Debug.Log("playerBall_form[0]: " + playerBall_form[0] + " playerBall_form[1]: " + playerBall_form[1]);
         }
         addHoledBall(getBallIdx(s));
+        Debug.Log("Player " + playerTurn + " has " + getAmountOfHoledBalls() + " balls");
 
-        if(isHoledFormCorrect()){
+        if(isHoledFormCorrect()){   //Diese Methode schaut auf die Form der Kugel. Weiße und Schwarze Kugel werden danach überprüft
             if(getWhiteAndBlackIdxInArray()[0] != -1){
-                moveWhiteBall();
+                //Weiße Kugel ist eingelocht worden
+                Debug.Log("Weiße Kugel ist eingelocht!");
             }
             if(getWhiteAndBlackIdxInArray()[1] != -1){
+                //Schwarze Kugel ist eingelocht worden
+                Debug.Log("Schwarze Kugel ist eingelocht worden");
                 if(getAmountOfHoledBalls() < 7){
                     addPoint(getOtherPlayerIdx());
+                    Debug.Log("Punkt für: " + getOtherPlayerIdx() + " Es Steht: " + playerPoints[0] + "/" + playerPoints[1] + " für Spieler 0");
                 }
+                eightBall_resetBallPosition();
             }
+            moveWhiteBall();
+
         }
         else{
             Debug.Log("Falsches Loch!");
+            switchPlayerTurn();
         }
         removeBallFromTable(getBallIdx(s));
-        switchPlayerTurn();
+        
     }
 
     private void eightBall_resetGameLogic(){
@@ -261,7 +278,8 @@ public class GameplayManager : MonoBehaviour
                 playerBall_holed[i, j] = -1;            //Leere Werte im index sollen -1 sein
             }
         }
-        round = 0;
+        round = 1;
+        playerIsAllowedToMove = true;
     }
     private void eightBall_resetBallPosition()
     {
@@ -429,6 +447,7 @@ public class GameplayManager : MonoBehaviour
         ballSize[0] = new Vector3(5.7f, 5.7f, 5.7f);
 
         Transform whiteBall_tf = whiteBall.GetComponent<Transform>();
+                  whiteBall_rb = whiteBall.GetComponent<Rigidbody>();
         Transform ball1_tf = ball1.GetComponent<Transform>();
         Transform ball2_tf = ball2.GetComponent<Transform>();
         Transform ball3_tf = ball3.GetComponent<Transform>();
