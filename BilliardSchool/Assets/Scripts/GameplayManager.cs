@@ -204,6 +204,11 @@ public class GameplayManager : MonoBehaviour
     private void addHoledBall(int idx){
         playerBall_holed[playerTurn, getAmountOfHoledBalls()] = idx;
     }
+
+    private void removeHoledBall(){ //Löscht den zuletzt hinzugefügten Ball von playerBall_holed
+        playerBall_holed[playerTurn, getAmountOfHoledBalls()-1] = -1;
+    }
+
     private void switchPlayerTurn(){
         if(playerTurn == 1){
             playerTurn = 0;
@@ -254,7 +259,10 @@ public class GameplayManager : MonoBehaviour
         }
         else{
             Debug.Log("Falsches Loch!");
+            //Durch diese Routine wird der Ball in das Array des anderen Spieler gesendet.
+            removeHoledBall();
             switchPlayerTurn();
+            addHoledBall(getBallIdx(s));
         }
         removeBallFromTable(getBallIdx(s));
         
