@@ -11,7 +11,4 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
-  - enabled: 1
-    path: Assets/Scenes/EscapeScreen.unity
-    guid: ca5bf543497f7134e98eed0aeb2bdd23
   m_configObjects: {}

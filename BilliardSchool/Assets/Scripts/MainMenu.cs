@@ -8,10 +8,6 @@ public class MainMenu : MonoBehaviour
     public void Play() {
 
         SceneManager.LoadScene(1); //Wenn Play gedrückt wird, wird auf die nächste Scene gesprungen
-        GameplayManager gameplayManager = GameObject.Find("GameplayManager").GetComponent<GameplayManager>();
-        //0 ist 8ball
-        gameplayManager.setGameMode(0);
-        gameplayManager.setBestOf(3);
 
     }
 
