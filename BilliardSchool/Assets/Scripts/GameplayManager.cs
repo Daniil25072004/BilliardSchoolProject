@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameplayManager : MonoBehaviour
 {
+    [SerializeField] private AudioSource ballhitSoundEffect; // Für den Sound brauche wir ne AudioSource
+    [SerializeField] private AudioSource ballrollSoundEffect;
     [SerializeField] GameObject whiteBall;
     [SerializeField] GameObject ball1;
     [SerializeField] GameObject ball2;
@@ -41,7 +43,6 @@ public class GameplayManager : MonoBehaviour
     private int bestOf;         //Wie oft muss ein Spieler gewinnen, dass ein Spieler komplett gewonnen hat?
     private int round;          //Welche Runde wird gerade gespielt
     private bool playerIsAllowedToMove; //darf ein Spieler die Kugel schießen
-
     private float[,] table_sizes = new float[2, 3] { { 112f, 150f, 224f }, { 2.0f, 2.0f, 2.0f } };
     //0 = 8pool ball, 1 = snooker
     //Es geht bei den Table Sizes um die innere Spielflächen und sie sind in cm angegeben. X ist die width und Z die Length
@@ -49,6 +50,7 @@ public class GameplayManager : MonoBehaviour
 
     public void shootWhiteBall(Vector3 vel){
         whiteBall_rb.velocity = vel;
+        ballhitSoundEffect.Play();
     }
     public bool playerCanMove(){
         return playerIsAllowedToMove;
