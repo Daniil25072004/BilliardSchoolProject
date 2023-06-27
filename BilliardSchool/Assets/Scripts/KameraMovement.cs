@@ -28,7 +28,6 @@ public class KameraMovement : MonoBehaviour
     private float queueForce = 0f;
     private bool riseQueueForce = true;
 
-
     void CameraAsBirdsEye(){
 
         transform.localEulerAngles = new Vector3(90, 0, 90);
@@ -40,12 +39,12 @@ public class KameraMovement : MonoBehaviour
         //Input.mouseScrollDelta.y ------> Wenn der Wert 1: Mausrad nach vorne. Bei -1 nach hinten und 0 ist default
         switch(Input.mouseScrollDelta.y){
             case 1:
-                if(distanceFromTarget > 10){
-                    distanceFromTarget = distanceFromTarget - 2;
+                if(distanceFromTarget > 5){
+                    distanceFromTarget--;
                 }
                 break;
             case -1:
-                if(distanceFromTarget < 40){
+                if(distanceFromTarget < 25){
                     distanceFromTarget++;
                 }
                 break;
