@@ -33,8 +33,8 @@ public class GameplayManager : MonoBehaviour
         return timeForMaxQueueForce;
     }
     private Transform[] balls_8ball = new Transform[16];
+    private Rigidbody[] balls_8ball_rb = new Rigidbody[16];
     private Vector3[] ballSize = new Vector3[2];
-    private Rigidbody whiteBall_rb;
     private int gameMode;               //0 = 8ball, 1 = snooker
     private int[] playerPoints;         //[0] = Punkte von Spieler 1        [1] = Punkte von Spieler 2
     private int playerTurn;             //idx 0 = Spieler 1         idx 1 = Spieler 2           (Wer dran ist)
@@ -48,8 +48,17 @@ public class GameplayManager : MonoBehaviour
     //Es geht bei den Table Sizes um die innere Spielflächen und sie sind in cm angegeben. X ist die width und Z die Length
     private Vector3 table_vonInsideZuGesScale = new Vector3(1.194458f, 1f, 1.09678f);
 
+    private bool areTheBallsStandingStill(){
+
+        for(;;){
+
+        }
+        return false;
+
+    }
+
     public void shootWhiteBall(Vector3 vel){
-        whiteBall_rb.velocity = vel;
+        balls_8ball_rb[0].velocity = vel;
         ballhitSoundEffect.Play();
     }
     public bool playerCanMove(){
@@ -192,7 +201,9 @@ public class GameplayManager : MonoBehaviour
     }
 
     private void removeBallFromTable(int idx){
-        balls_8ball[idx].position = new Vector3(0,0,0);
+        //Freeze Ball
+        balls_8ball_rb[idx].constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
+        balls_8ball[idx].localPosition = new Vector3(0, ballOnTableY(), -20);
     }
 
     //Diese Funktion wird unendlich fortfahren, wenn der Array voll mit Kugeln ist !!!
@@ -450,6 +461,12 @@ public class GameplayManager : MonoBehaviour
             balls_8ball_row4[i].position = poolTable_tf.position + new Vector3(2f * balls_8ball_row4[i].localScale.x - balls_8ball_row4[i].localScale.x * (i), ballOnTableY(), ballGroup_zOffset + 2f * balls_8ball_row4[i].localScale.x / Mathf.Tan(30 * Mathf.PI / 180));
         }
 
+        for(int i = 0; i < 16; i++){
+            //Alle Freezes entfernen
+            balls_8ball_rb[i].constraints = RigidbodyConstraints.None;
+        }
+
+        
     }
 
     void Start()
@@ -457,7 +474,6 @@ public class GameplayManager : MonoBehaviour
         ballSize[0] = new Vector3(5.7f, 5.7f, 5.7f);
 
         Transform whiteBall_tf = whiteBall.GetComponent<Transform>();
-                  whiteBall_rb = whiteBall.GetComponent<Rigidbody>();
         Transform ball1_tf = ball1.GetComponent<Transform>();
         Transform ball2_tf = ball2.GetComponent<Transform>();
         Transform ball3_tf = ball3.GetComponent<Transform>();
@@ -491,6 +507,23 @@ public class GameplayManager : MonoBehaviour
         balls_8ball[13] = ball5_half_tf;
         balls_8ball[14] = ball6_half_tf;
         balls_8ball[15] = ball7_half_tf;
+
+        balls_8ball_rb[0] = whiteBall.GetComponent<Rigidbody>();
+        balls_8ball_rb[1] = ball1.GetComponent<Rigidbody>();
+        balls_8ball_rb[2] = ball2.GetComponent<Rigidbody>();
+        balls_8ball_rb[3] = ball3.GetComponent<Rigidbody>();
+        balls_8ball_rb[4] = ball4.GetComponent<Rigidbody>();
+        balls_8ball_rb[5] = ball5.GetComponent<Rigidbody>();
+        balls_8ball_rb[6] = ball6.GetComponent<Rigidbody>();
+        balls_8ball_rb[7] = ball7.GetComponent<Rigidbody>();
+        balls_8ball_rb[8] = ball8.GetComponent<Rigidbody>();
+        balls_8ball_rb[9] = ball1_half.GetComponent<Rigidbody>();
+        balls_8ball_rb[10] = ball2_half.GetComponent<Rigidbody>();
+        balls_8ball_rb[11] = ball3_half.GetComponent<Rigidbody>();
+        balls_8ball_rb[12] = ball4_half.GetComponent<Rigidbody>();
+        balls_8ball_rb[13] = ball5_half.GetComponent<Rigidbody>();
+        balls_8ball_rb[14] = ball6_half.GetComponent<Rigidbody>();
+        balls_8ball_rb[15] = ball7_half.GetComponent<Rigidbody>();
 
         Pooltable_script poolTable_script = poolTable.GetComponent<Pooltable_script>(); //Assoziation auf den Script des Pooltables.
                                                                                         //Brauchen wir, um die Funktion "setSize" zu verwenden, die die Grösse des Tisches setzt.
