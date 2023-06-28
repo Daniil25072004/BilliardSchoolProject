@@ -34,12 +34,14 @@ public class GameplayManager : MonoBehaviour
     }
     private Transform[] balls_8ball = new Transform[16];
     private Rigidbody[] balls_8ball_rb = new Rigidbody[16];
+    private GameObject firstBallHit;
     private Vector3[] ballSize = new Vector3[2];
     private int gameMode;               //0 = 8ball, 1 = snooker
     private int[] playerPoints;         //[0] = Punkte von Spieler 1        [1] = Punkte von Spieler 2
     private int playerTurn;             //idx 0 = Spieler 1         idx 1 = Spieler 2           (Wer dran ist)
     private int[] playerBall_form;      //idx 0 = Spieler 1         idx 1 = Spieler 2           Ballform:  0 = null; 1 = half; 2 = full
     private int[,] playerBall_holed;    //idx 0,? = Spieler 1       idx 1,? = Spieler 2         Der Wert ist die Nummer der Kugel. 0 bedeutet keine Kugel
+    private int[] temp_holedBalls;
     private int bestOf;         //Wie oft muss ein Spieler gewinnen, dass ein Spieler komplett gewonnen hat?
     private int round;          //Welche Runde wird gerade gespielt
     private bool playerIsAllowedToMove; //darf ein Spieler die Kugel schießen
@@ -48,31 +50,31 @@ public class GameplayManager : MonoBehaviour
     //Es geht bei den Table Sizes um die innere Spielflächen und sie sind in cm angegeben. X ist die width und Z die Length
     private Vector3 table_vonInsideZuGesScale = new Vector3(1.194458f, 1f, 1.09678f);
 
-    private bool areTheBallsStandingStill(){
-
-        for(;;){
-
+    private void resetTemp_holedBalls(){
+        for(int j = 0; j < 16; j++){
+            temp_holedBalls[j] = -1;                //Leere Werte im index sollen -1 sein
         }
-        return false;
-
+    }
+    private bool areTheBallsStandingStill(){
+        bool standingStill = true;
+        for(int i = 0; i < 16; i++){
+            //Berechnet die Geschwindigkeit aller Kugeln. Wenn sie alle unter 1 ist dann "bleiben alle stehen"
+            if( Mathf.Sqrt(Mathf.Pow(balls_8ball_rb[i].velocity.x,2f) + Mathf.Pow(balls_8ball_rb[i].velocity.z,2f)) > 1f){
+                standingStill = false;
+            }
+        }
+        return standingStill;
     }
 
-    public void shootWhiteBall(Vector3 vel){
-        balls_8ball_rb[0].velocity = vel;
-        ballhitSoundEffect.Play();
-    }
-    public bool playerCanMove(){
+    public bool getPlayerIsAllowedToMove(){
         return playerIsAllowedToMove;
     }
-    public void registerHitboxCollision(string s, int hitbox)
-    {
-        GameObject ball = GameObject.Find(s);
-        switch(gameMode){
-            case 0:
-                eightBall_registerHitboxCollision(s, hitbox);
-                break;
-            case 1:
-                break;
+    public void shootWhiteBall(Vector3 vel){
+        if(playerIsAllowedToMove){
+            balls_8ball_rb[0].velocity = vel;
+            ballhitSoundEffect.Play();
+            resetTemp_holedBalls();
+            playerIsAllowedToMove = false;
         }
     }
 
@@ -144,8 +146,8 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    private int getOtherPlayerIdx(){
-        if(playerTurn == 0){
+    private int getOtherPlayerIdx(int pPlayerTurn){
+        if(pPlayerTurn == 0){
             return 1;
         }
         else{
@@ -153,13 +155,22 @@ public class GameplayManager : MonoBehaviour
         }
     }
 
-    //Je nachdem, welcher Spieler gerade dran ist (playerTurn), wird diese Funktion seine eingelochten Kugeln anschauen und auswerten
-    /*
-        BESONDERE SITUATIONEN IM playerBall_holed:
-            -Es ist eine Weiße Kugel drinnen                                            (Anderer Spieler darf die Position der Weißen Kugel entscheiden)
-            -Die schwarze ist drinnen obwohl die anderen noch nicht eingelocht sind.    (Verlust der Runde)
-            -Was wenn die weiße UND schwarze eingelocht sind?
-    */
+    //Gibt zurück, welche Form der Ball von idx in balls_8ball hat.
+    private int getBallForm(int idx){
+        int form = 0;
+        //Nicht die weiße weder noch die schwarze Kugel. Mindestens eine Volle Kugel
+        if(idx > 0 && idx != 8){
+            //Eine volle Kugel
+            form = 2;
+        }
+        //Die Kugeln im Array nach der schwarzen Kugel sind alle halbe Kugeln
+        if(idx > 8){    
+            //Eine halbe Kugel
+            form = 1;
+        }
+
+        return form;
+    }
     private bool isHoledFormCorrect(){
         bool correctForm = true;
         //Halbe Kugeln
@@ -183,15 +194,15 @@ public class GameplayManager : MonoBehaviour
         return correctForm;
     }
     //idx 0 = white; idx 1 = black; Der Wert -1 bedeutet, dass die Kugel garnicht drinnen ist. Ansonsten ist der rauskommende Wert ein index für die Position im playerBall_holed der Kugel.
-    private int[] getWhiteAndBlackIdxInArray(){
+    private int[] getWhiteAndBlackIdxInArray(int pPlayerTurn){
         int[] whiteAndBlack = new int[2];
         int whiteIdx = -1;
         int blackIdx = -1;
-        for(int i = 0; i < getAmountOfHoledBalls(); i++){
-            if(playerBall_holed[playerTurn, i] == 0){
+        for(int i = 0; i < getAmountOfHoledBalls(playerTurn); i++){
+            if(playerBall_holed[pPlayerTurn, i] == 0){
                 whiteIdx = i;
             }
-            if(playerBall_holed[playerTurn, i] == 8){
+            if(playerBall_holed[pPlayerTurn, i] == 8){
                 blackIdx = i;
             }
         }
@@ -207,19 +218,22 @@ public class GameplayManager : MonoBehaviour
     }
 
     //Diese Funktion wird unendlich fortfahren, wenn der Array voll mit Kugeln ist !!!
-    private int getAmountOfHoledBalls(){
+    private int getAmountOfHoledBalls(int pPlayerTurn){
         int idxOfArray = 0;
-        while(playerBall_holed[playerTurn, idxOfArray] != -1 && idxOfArray < 7){
+        while(playerBall_holed[pPlayerTurn, idxOfArray] != -1 && idxOfArray < 7){
             idxOfArray++;
         }
         return idxOfArray;
     }
+    private void addHoledBallToTempArray(int idx){
+        playerBall_holed[playerTurn, getAmountOfHoledBalls(playerTurn)] = idx;
+    }
     private void addHoledBall(int idx){
-        playerBall_holed[playerTurn, getAmountOfHoledBalls()] = idx;
+        playerBall_holed[playerTurn, getAmountOfHoledBalls(playerTurn)] = idx;
     }
 
     private void removeHoledBall(){ //Löscht den zuletzt hinzugefügten Ball von playerBall_holed
-        playerBall_holed[playerTurn, getAmountOfHoledBalls()-1] = -1;
+        playerBall_holed[playerTurn, getAmountOfHoledBalls(playerTurn)-1] = -1;
     }
 
     private void switchPlayerTurn(){
@@ -234,51 +248,44 @@ public class GameplayManager : MonoBehaviour
     private void moveWhiteBall(){
     
     }
-    private void addPoint(int invertedPlayerTurn){
-        playerPoints[invertedPlayerTurn]++;
+    private void addPoint(int player){
+        playerPoints[player]++;
+    }
+    //Eine Hitbox registriert, dass eine Kugel in ein Loch gefallen ist
+    public void registerHitboxCollision(string s, int hitbox)
+    {
+        GameObject ball = GameObject.Find(s);
+        if(firstBallHit == null){
+            firstBallHit = ball;
+        }
+        switch(gameMode){
+            case 0:
+                eightBall_registerHitboxCollision(s, hitbox);
+                break;
+            case 1:
+                break;
+        }
     }
     private void eightBall_registerHitboxCollision(string s, int hitbox){
-        //Wurde überhaupt entschieden, welcher Spieler welche Kugel hat?
-        //Diese Abfrage wird also nur einmal geschehen.
+
+        //Merke dir die gefallenen Kugeln
+        addHoledBallToTempArray(getBallIdx(s));
+        //Entferne die Kugel vom Tisch
+        removeBallFromTable(getBallIdx(s));
+        
+        /*  
         if(playerBall_form[playerTurn] == 0){
             if(0 < getBallIdx(s) && getBallIdx(s) < 8){
                     playerBall_form[playerTurn] = 2;
-                    playerBall_form[getOtherPlayerIdx()] = 1;
+                    playerBall_form[getOtherPlayerIdx(playerTurn)] = 1;
                 }
                 else{
                     playerBall_form[playerTurn] = 1;
-                    playerBall_form[getOtherPlayerIdx()] = 2;
+                    playerBall_form[getOtherPlayerIdx(playerTurn)] = 2;
             }
         }
-        addHoledBall(getBallIdx(s));
-        Debug.Log("Player " + playerTurn + " has " + getAmountOfHoledBalls() + " balls");
+        */
 
-        if(isHoledFormCorrect()){   //Diese Methode schaut auf die Form der Kugel. Weiße und Schwarze Kugel werden danach überprüft
-            if(getWhiteAndBlackIdxInArray()[0] != -1){
-                //Weiße Kugel ist eingelocht worden
-                Debug.Log("Weiße Kugel ist eingelocht!");
-            }
-            if(getWhiteAndBlackIdxInArray()[1] != -1){
-                //Schwarze Kugel ist eingelocht worden
-                Debug.Log("Schwarze Kugel ist eingelocht worden");
-                if(getAmountOfHoledBalls() < 7){
-                    addPoint(getOtherPlayerIdx());
-                    Debug.Log("Punkt für: " + getOtherPlayerIdx() + " Es Steht: " + playerPoints[0] + "/" + playerPoints[1] + " für Spieler 0");
-                }
-                eightBall_resetBallPosition();
-            }
-            moveWhiteBall();
-
-        }
-        else{
-            Debug.Log("Falsches Loch!");
-            //Durch diese Routine wird der Ball in das Array des anderen Spieler gesendet.
-            removeHoledBall();
-            switchPlayerTurn();
-            addHoledBall(getBallIdx(s));
-        }
-        removeBallFromTable(getBallIdx(s));
-        
     }
 
     private void eightBall_resetGameLogic(){
@@ -292,13 +299,17 @@ public class GameplayManager : MonoBehaviour
         playerPoints = new int[2];
         playerBall_form = new int[2];
         playerBall_holed = new int[2,8];
+        temp_holedBalls = new int[16];
         for(int i = 0; i < 2; i++){
             playerPoints[i] = 0;
             playerBall_form[i] = 0;
             for(int j = 0; j < 8; j++){
                 playerBall_holed[i, j] = -1;            //Leere Werte im index sollen -1 sein
             }
+            resetTemp_holedBalls();
         }
+        firstBallHit = null;
+        bestOf = 3;
         round = 1;
         playerIsAllowedToMove = true;
     }
@@ -434,7 +445,6 @@ public class GameplayManager : MonoBehaviour
 
         }
 
-
         //Zufällige Rotationen
         for (int i = 0; i < 16; i++)
         {
@@ -538,8 +548,102 @@ public class GameplayManager : MonoBehaviour
         startGame();
     }
 
+    void eightBall_Wingame(int player){
+
+    }
     void Update()
     {
+        //Nachdem eine Kugel geschossen wurde, 
+        if(playerIsAllowedToMove == false){
+        // warte bis alle Kugeln stehenbleiben
+            if(areTheBallsStandingStill()){
+                playerIsAllowedToMove = true;
+                for(int i = 0; i < 16; i++){    //Die Kugeln werden 100% zum stehen gebracht
+                    balls_8ball_rb[i].velocity = new Vector3(0f,0f,0f);
+                    balls_8ball_rb[i].angularVelocity = new Vector3(0f,0f,0f);
+                }
 
+                //Wurde bereits festgelegt, wer Welche Kugeln anspielt?
+                if(playerBall_form[0] != 0){//Ja
+
+                    int oldPlayerTurn = playerTurn; //Das Speichern des jetztigen Spielers ist wichtig für die Bewertung
+
+                    //Ist die erste getroffene Kugel eine mit der korrekten Form?
+                    if(playerBall_form[playerTurn] != getBallForm(getBallIdx(firstBallHit.name))){
+                        //Wenn nicht erfolgt ein Spielerwechsel und die Position der weißen Kugel darf von dem neuen Spieler bestimmt werden
+                        switchPlayerTurn();
+                    }
+
+                    //Wurde die schwarze Kugel eingelocht?
+                    if(getWhiteAndBlackIdxInArray(oldPlayerTurn)[1] != -1){
+                        //Hat der Spieler der dran ist, alle seine Kugeln eingelocht?
+                        if(getAmountOfHoledBalls(oldPlayerTurn) == 7){
+                            addPoint(oldPlayerTurn);
+                        }
+                        //Wenn nicht, bekommt der andere Spieler einen Punkt
+                        else{
+                            addPoint(getOtherPlayerIdx(oldPlayerTurn));
+                        }
+
+                        if(playerPoints[0] == bestOf){
+                            eightBall_Wingame(oldPlayerTurn);
+                        }
+                        if(playerPoints[1] == bestOf){
+                            eightBall_Wingame(oldPlayerTurn);
+                        }
+
+                        //Hat ein Spieler die volle Punktzahl noch nicht erreicht, geht das Spiel hier weiter.
+                        playerIsAllowedToMove = true;
+                    }
+                    else{
+                        //Wurde eine Kugel mit der richtigen Form eingelocht?
+                        int correctForm = playerBall_form[playerTurn];
+                        for(int i = 0; i < 16; i++){
+
+                        }
+                    }
+                }
+                else{                       //Nein, kein Spieler hat eine Form zugewiesen bekommen.
+                    bool containsColoredBall = false;
+                    int idxOfFirstColoredBall = -1;
+                    bool containsWhiteBall = false;
+                    for(int i = 0; i < 16; i++){
+                        //Die Situation, wenn die erste Kugel die schwarze ist, wird hier nicht bedacht.
+                        //Was soll aber auch in der Situation passieren?
+                        //Wenn diese Abfrage true ist, ist eine farbige Kugel eingelocht worden.
+                        if(temp_holedBalls[i] > 0 && temp_holedBalls[i] != 8){
+                            if(containsColoredBall == false) idxOfFirstColoredBall = i;
+                            containsColoredBall = true;
+                        }
+                        if(temp_holedBalls[i] == 0){
+                            containsWhiteBall = true;
+                        }
+                    }
+                    //Wurde eine farbige Kugel eingelocht?
+                    if(containsColoredBall){
+                        //Der Spieler der dran ist, bekommt die Form der ersten Kugel, die eingelocht wurde. Der Andere bekommt die andere Form.
+                        playerBall_form[playerTurn] = getBallForm(idxOfFirstColoredBall);
+                        playerBall_form[getOtherPlayerIdx(playerTurn)] = getBallForm(idxOfFirstColoredBall);
+                        
+                        if(containsWhiteBall){
+                            switchPlayerTurn();
+                            //Spieler darf die Position bestimmen
+                        }
+                    }
+                    else{
+                        if(containsWhiteBall){
+                            switchPlayerTurn();
+                            //Spieler darf die Position bestimmen
+                        }
+                        else{
+                            switchPlayerTurn();
+                        }
+                    }
+
+                }
+                
+            }
+            
+        }
     }
 }

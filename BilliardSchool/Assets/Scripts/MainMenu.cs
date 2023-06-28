@@ -36,7 +36,8 @@ public class MainMenu : MonoBehaviour
               if(cameraKey != Input.inputString) {
                 hitKey = Input.inputString;
                 changeHitKeyPressed = false; 
-                Debug.Log("Key:"+hitKey+" pressed");
+                PlayerControl.setHitKey(hitKey);
+                Debug.Log("Key: " + hitKey + " pressed");
               }
             }
         }
@@ -45,7 +46,8 @@ public class MainMenu : MonoBehaviour
                if(hitKey != Input.inputString) {
                cameraKey = Input.inputString;
                changeCameraKeyPressed = false; 
-               Debug.Log("Key:"+cameraKey+" pressed");
+               PlayerControl.setCameraKey(cameraKey);
+               Debug.Log("Key: " + cameraKey + " pressed");
                }
             }
         }

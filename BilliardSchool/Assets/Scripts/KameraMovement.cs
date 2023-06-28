@@ -28,6 +28,7 @@ public class KameraMovement : MonoBehaviour
     private float queueForce = 0f;
     private bool riseQueueForce = true;
 
+
     void CameraAsBirdsEye(){
 
         transform.localEulerAngles = new Vector3(90, 0, 90);
@@ -39,13 +40,13 @@ public class KameraMovement : MonoBehaviour
         //Input.mouseScrollDelta.y ------> Wenn der Wert 1: Mausrad nach vorne. Bei -1 nach hinten und 0 ist default
         switch(Input.mouseScrollDelta.y){
             case 1:
-                if(distanceFromTarget > 5){
-                    distanceFromTarget--;
+                if(distanceFromTarget > 10){
+                    distanceFromTarget = distanceFromTarget - 2;
                 }
                 break;
             case -1:
-                if(distanceFromTarget < 25){
-                    distanceFromTarget++;
+                if(distanceFromTarget < 40){
+                    distanceFromTarget = distanceFromTarget + 2;
                 }
                 break;
             default:
@@ -119,10 +120,11 @@ public class KameraMovement : MonoBehaviour
     
     void Update()
     {
-        if(gameplayManager_script.playerCanMove() && holdingPushButton || Input.GetKey("b")){
+        if(holdingPushButton || Input.GetKey(PlayerControl.getHitKey())){
             holdingPushButton = true;
             manageQueueForce();
-            if(Input.GetKey("b") == false){ //Kugel wird geschossen
+            if(Input.GetKey(PlayerControl.getHitKey()) == false){ 
+                //Dem gameplayManager wird befohlen, die Kugel zu schießen
                 gameplayManager_script.shootWhiteBall(new Vector3(transform.forward.x, 0, transform.forward.z)*queueForce);
                 //whiteBall_rb.velocity = new Vector3(transform.forward.x, 0, transform.forward.z)*queueForce;
                 holdingPushButton = false;
@@ -130,7 +132,7 @@ public class KameraMovement : MonoBehaviour
             }
         }
         
-        if(Input.GetKeyDown("a")){
+        if(Input.GetKeyDown(PlayerControl.getCameraKey()) && holdingPushButton == false){
             if(mode == 0){
                 mode = 1;
             }
