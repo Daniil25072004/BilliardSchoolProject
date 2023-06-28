@@ -2,10 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Audio;
 public class PauseMenu : MonoBehaviour
 {
+    public AudioMixer audio;
     public static bool paused = false;
     public GameObject PauseCanvas;
+    public GameObject blackscreen;
+    private bool changeHitKeyPressed = false;
+    private bool changeCameraKeyPressed = false;
     void start() {
         Time.timeScale =1f;
     }
@@ -15,6 +20,24 @@ public class PauseMenu : MonoBehaviour
                 play();
             } else {
                 stop();
+            }
+        }
+        if(changeHitKeyPressed) {
+            if(Input.anyKeyDown) {
+              if(PlayerControl.getHitKey() != Input.inputString) {
+                changeHitKeyPressed = false; 
+                PlayerControl.setHitKey(Input.inputString);
+                blackscreen.SetActive(false);
+              }
+            }
+        }
+        if(changeCameraKeyPressed) {
+            if(Input.anyKeyDown) {
+               if(PlayerControl.getCameraKey() != Input.inputString) {
+               changeCameraKeyPressed = false; 
+               PlayerControl.setCameraKey(Input.inputString);
+               blackscreen.SetActive(false);
+               }
             }
         }
     }
@@ -28,10 +51,19 @@ public class PauseMenu : MonoBehaviour
        Time.timeScale = 1f;
        paused = false; 
     }
-
+    
     public void MainMenuButton() {
         Time.timeScale = 1f;
         paused = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex -1);
+    }
+    public void SetVolume(float pVolume) {
+        audio.SetFloat("Volume", pVolume);
+    }
+    public void ChangeHitKey() {
+        changeHitKeyPressed = true;
+    }
+    public void ChangeCameraKey() {
+        changeCameraKeyPressed = true;
     }
 }

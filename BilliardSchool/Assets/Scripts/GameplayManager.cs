@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class GameplayManager : MonoBehaviour
 {
-    [SerializeField] private AudioSource ballhitSoundEffect; // Für den Sound brauche wir ne AudioSource
-    [SerializeField] private AudioSource ballrollSoundEffect;
     [SerializeField] GameObject whiteBall;
     [SerializeField] GameObject ball1;
     [SerializeField] GameObject ball2;
@@ -72,7 +70,6 @@ public class GameplayManager : MonoBehaviour
     public void shootWhiteBall(Vector3 vel){
         if(playerIsAllowedToMove){
             balls_8ball_rb[0].velocity = vel;
-            ballhitSoundEffect.Play();
             resetTemp_holedBalls();
             playerIsAllowedToMove = false;
         }

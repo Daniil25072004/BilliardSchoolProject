@@ -11,8 +11,10 @@ public class MainMenu : MonoBehaviour
     private string cameraKey = "a";
     private bool changeHitKeyPressed = false;
     private bool changeCameraKeyPressed = false;
+    public GameObject blackscreen;
     public AudioMixer audio;
     Resolution[] resolutions;
+    int bestOf;
     public TMPro.TMP_Dropdown resolutionDropdown;
     void Start() {
         resolutions = Screen.resolutions;
@@ -37,6 +39,7 @@ public class MainMenu : MonoBehaviour
                 hitKey = Input.inputString;
                 changeHitKeyPressed = false; 
                 PlayerControl.setHitKey(hitKey);
+                blackscreen.SetActive(false);
                 Debug.Log("Key: " + hitKey + " pressed");
               }
             }
@@ -47,6 +50,7 @@ public class MainMenu : MonoBehaviour
                cameraKey = Input.inputString;
                changeCameraKeyPressed = false; 
                PlayerControl.setCameraKey(cameraKey);
+               blackscreen.SetActive(false);
                Debug.Log("Key: " + cameraKey + " pressed");
                }
             }
@@ -58,8 +62,9 @@ public class MainMenu : MonoBehaviour
     public string getCameraKey() {
         return cameraKey;
     }
-    public void Play() {
-
+    public void Play(int pBestOf) {
+        PlayerControl.setBestOf(pBestOf);
+        Debug.Log(pBestOf.ToString());
         SceneManager.LoadScene(1); //Wenn Play gedrückt wird, wird auf die nächste Scene gesprungen
 
     }
