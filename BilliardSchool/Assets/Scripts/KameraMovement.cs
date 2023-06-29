@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class KameraMovement : MonoBehaviour
 {
     [SerializeField] public float distanceFromTarget = 5.0f;
@@ -27,7 +27,7 @@ public class KameraMovement : MonoBehaviour
     private bool holdingPushButton = false;
     private float queueForce = 0f;
     private bool riseQueueForce = true;
-
+    public Slider powerBar;
 
     void CameraAsBirdsEye(){
 
@@ -95,6 +95,7 @@ public class KameraMovement : MonoBehaviour
         whiteBall_rb = whiteBall.GetComponent<Rigidbody>();
         pooltable_tf = poolTable.GetComponent<Transform>();
         gameplayManager_script = gameplayManager.GetComponent<GameplayManager>();
+        powerBar.maxValue = gameplayManager_script.getMaxQueueForce();
 
     }
     void manageQueueForce(){
@@ -111,9 +112,13 @@ public class KameraMovement : MonoBehaviour
         }
         if(riseQueueForce){
             queueForce += Time.deltaTime * timeForMax;
+            powerBar.value = queueForce;
+
+
         }
         else{
             queueForce -= Time.deltaTime * timeForMax;
+            powerBar.value = queueForce;
         }
     }
 
