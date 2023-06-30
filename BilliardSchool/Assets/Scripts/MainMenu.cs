@@ -13,6 +13,7 @@ public class MainMenu : MonoBehaviour
     private bool changeCameraKeyPressed = false;
     public GameObject blackscreen;
     public AudioMixer audio;
+    public Slider volumeBar;
     Resolution[] resolutions;
     int bestOf;
     public TMPro.TMP_Dropdown resolutionDropdown;
@@ -31,8 +32,14 @@ public class MainMenu : MonoBehaviour
         resolutionDropdown.AddOptions(options);
         resolutionDropdown.value = currentResolutionIndex;
         resolutionDropdown.RefreshShownValue();
+        Data data = SaveSystem.LoadData();
+        PlayerControl.setVolume(data.volume);
+        PlayerControl.setCameraKey(data.cameraKey);
+        PlayerControl.setHitKey(data.hitkey);
     }
     void Update() {
+        volumeBar.value = PlayerControl.getVolume();
+        audio.SetFloat("Volume", PlayerControl.getVolume());
         if(changeHitKeyPressed) {
             if(Input.anyKeyDown) {
               if(cameraKey != Input.inputString) {
@@ -76,6 +83,7 @@ public class MainMenu : MonoBehaviour
 
     public void Quit() {
         Debug.Log("Player left the game!");
+        SaveSystem.SaveData();
         Application.Quit();
     }
     public void ChangeHitKey() {
@@ -86,6 +94,7 @@ public class MainMenu : MonoBehaviour
     }
     public void SetVolume(float pVolume) {
         audio.SetFloat("Volume", pVolume);
+        PlayerControl.setVolume(pVolume);
     }
     public void SetQuality(int pIndex) {
         QualitySettings.SetQualityLevel(pIndex);
@@ -96,5 +105,8 @@ public class MainMenu : MonoBehaviour
     public void SetResolution(int resIndex) {
         Resolution resolution = resolutions[resIndex];
         Screen.SetResolution(resolution.width,resolution.height,Screen.fullScreen);
+    }
+    public void Save() {
+        SaveSystem.SaveData();
     }
 }

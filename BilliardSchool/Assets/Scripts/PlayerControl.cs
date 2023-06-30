@@ -7,8 +7,17 @@ public class PlayerControl : MonoBehaviour
     private static string hitKey = "b";
     private static string cameraKey = "a";
     private static int bestOf;
+    private static float volume = 0;
+    private bool changeHitKeyPressed = false;
+    private bool changeCameraKeyPressed = false;
     public static void setHitKey(string s){
         hitKey = s;
+    }
+    public static void setVolume(float pVolume) {
+        volume = pVolume;
+    }
+    public static float getVolume() {
+        return volume;
     }
     public static string getHitKey(){
         return hitKey;

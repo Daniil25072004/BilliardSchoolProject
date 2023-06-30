@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Audio;
+using UnityEngine.UI;
 public class PauseMenu : MonoBehaviour
 {
     public AudioMixer audio;
@@ -11,10 +12,13 @@ public class PauseMenu : MonoBehaviour
     public GameObject blackscreen;
     private bool changeHitKeyPressed = false;
     private bool changeCameraKeyPressed = false;
+    public Slider volumeBar;
     void start() {
         Time.timeScale =1f;
     }
     void Update() {
+        volumeBar.value = PlayerControl.getVolume();
+        audio.SetFloat("Volume", PlayerControl.getVolume());
         if(Input.GetKeyDown(KeyCode.Escape)) {
             if(paused) {
                 play();
@@ -59,11 +63,15 @@ public class PauseMenu : MonoBehaviour
     }
     public void SetVolume(float pVolume) {
         audio.SetFloat("Volume", pVolume);
+        PlayerControl.setVolume(pVolume);
     }
     public void ChangeHitKey() {
         changeHitKeyPressed = true;
     }
     public void ChangeCameraKey() {
         changeCameraKeyPressed = true;
+    }
+    public void Save() {
+        SaveSystem.SaveData();
     }
 }
