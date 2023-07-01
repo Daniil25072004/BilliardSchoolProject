@@ -23,12 +23,20 @@ public class KameraMovement : MonoBehaviour
     private Vector3 currentRotation;
     private int mode = 1;       //Diese Variable sagt, was genau die Kamera macht. 0 ist z.B. Vogelperspektive, 1 wäre die Kamera dann auf der Kugel fixiert.
     //Variablen für das Kugelschießen
-    private bool isAllowedToPush = true;
     private bool holdingPushButton = false;
     private float queueForce = 0f;
     private bool riseQueueForce = true;
+    private bool isAllowedToChangePerspective = true;
+    private bool isPlayerDecidingBallPosition = false;
     public Slider powerBar;
-
+    public LayerMask layersToHit;
+    public void forceCameraMode(int m){
+        mode = m;
+        isAllowedToChangePerspective = false;
+    }
+    public void allowChangeOfPerspective(){
+        isAllowedToChangePerspective = true;
+    }
     void CameraAsBirdsEye(){
 
         transform.localEulerAngles = new Vector3(90, 0, 90);
@@ -122,10 +130,16 @@ public class KameraMovement : MonoBehaviour
         }
     }
 
-    
+    public void playerDecidesBallPosition(){
+        mode = 0;
+        CameraAsBirdsEye();
+        gameplayManager_script.constrainAllBalls(true);
+        isAllowedToChangePerspective = false;
+        isPlayerDecidingBallPosition = true;
+    }
     void Update()
     {
-        if(holdingPushButton || Input.GetKey(PlayerControl.getHitKey())){
+        if((holdingPushButton || Input.GetKey(PlayerControl.getHitKey())) && gameplayManager_script.getPlayerIsAllowedToMove()){
             holdingPushButton = true;
             manageQueueForce();
             if(Input.GetKey(PlayerControl.getHitKey()) == false){ 
@@ -136,8 +150,33 @@ public class KameraMovement : MonoBehaviour
                 queueForce = 0f;
             }
         }
+
+        if(isPlayerDecidingBallPosition){
+            //Die Position der Maus auf dem Bildschirm auf den jeweiligen Pixel
+            Vector3 screenPosition = Input.mousePosition;
+            Vector3 worldPosition;
+            //Ein Ray ist eine Linie die von der Kamera aus durch den Punkt zeigt, auf den die Maus zeigt.
+            //  (Dieser Punkt ist in der 3D-Welt von Unity, nicht der 2D-Pixel auf dem Bildschirm)
+            Ray ray = Camera.main.ScreenPointToRay(screenPosition);
+
+            //Diese Abfrage ist wahr, wenn der Ray mit etwas (Was genau sagt "layersToHit") kollidiert.
+            //d.h. Wenn die Maus auf dem Tisch ist, ist diese Abfrage wahr
+            if(Physics.Raycast(ray, out RaycastHit hitData, 500, layersToHit)){
+                worldPosition = hitData.point;
+                whiteBall_tf.position = worldPosition + new Vector3(0f, gameplayManager_script.getBallSize(0).y/2, 0f);
+            }
+
+            //Der Spieler bestätigt die Position mit der "place" Taste.
+            if(Input.GetKeyDown(PlayerControl.getPlaceKey())){
+                isPlayerDecidingBallPosition = false;
+                isAllowedToChangePerspective = true;
+                gameplayManager_script.playerPlacedBall();
+                mode = 1;
+            }
+
+        }
         
-        if(Input.GetKeyDown(PlayerControl.getCameraKey()) && holdingPushButton == false){
+        if(Input.GetKeyDown(PlayerControl.getCameraKey()) && holdingPushButton == false && isAllowedToChangePerspective){
             if(mode == 0){
                 mode = 1;
             }
