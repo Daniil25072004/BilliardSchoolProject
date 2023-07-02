@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 using TMPro;
 
 public class GameplayManager : MonoBehaviour
@@ -49,6 +50,15 @@ public class GameplayManager : MonoBehaviour
     //Diese zwei Objekte zeigen den Punktestand und in welcher Runde gerade gespielt wird.
     private TMP_Text[] pointsCounter = new TMP_Text[2];
     private TMP_Text roundsCounter;
+
+    //Dieses Objekt stellt die leuchtende Farbe der Kugel ein
+    private Bloom whiteBall_bloom;
+    private void refreshBallColor(){
+        ColorParameter cp = new ColorParameter();
+        if(playerTurn == 0) cp.Interp(Color.green, Color.yellow, 0f);
+        else                cp.Interp(Color.blue, Color.yellow, 0f);
+        whiteBall_bloom.color.value = cp;
+    }
 
     public Vector3 getBallSize(int idx){
         return ballSize[idx];
@@ -112,6 +122,7 @@ public class GameplayManager : MonoBehaviour
                 bestOf = 3;
                 eightBall_resetBallPosition();
                 eightBall_resetGameLogic();
+                refreshBallColor();
                 Debug.Log("Best of " + bestOf);
                 break;
             case 1:
@@ -652,6 +663,14 @@ public class GameplayManager : MonoBehaviour
         roundsCounter = GameObject.Find("Round Counter").GetComponent<TMP_Text>();
         pointsCounter[0] = GameObject.Find("Points Counter_p0").GetComponent<TMP_Text>();
         pointsCounter[1] = GameObject.Find("Points Counter_p1").GetComponent<TMP_Text>();
+
+        if(GameObject.Find("Main Camera").GetComponent<PostProcessVolume>().profile.TryGetSettings(out whiteBall_bloom)){
+            Debug.Log("Es geht wtf");
+        }
+        else{
+            Debug.Log("es geht nicht!");
+        }
+
         for (int i = 0; i < 16; i++)
         {
             balls_8ball[i].localScale = ballSize[0];
@@ -803,6 +822,7 @@ public class GameplayManager : MonoBehaviour
                 }
             }
         }
+        refreshBallColor();
         refreshTextBoxes();
     }
 }

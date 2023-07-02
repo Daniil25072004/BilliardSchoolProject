@@ -11,8 +11,8 @@ TagManager:
   - TableFloor
   - Water
   - UI
-  - 
-  - 
+  - Camera
+  - noPostCamera
   - 
   - 
   - 
