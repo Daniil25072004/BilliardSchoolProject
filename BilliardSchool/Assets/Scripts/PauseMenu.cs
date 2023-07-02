@@ -12,6 +12,7 @@ public class PauseMenu : MonoBehaviour
     public GameObject blackscreen;
     private bool changeHitKeyPressed = false;
     private bool changeCameraKeyPressed = false;
+    private bool changePositionBallKeyPressed = false;
     public Slider volumeBar;
     void start() {
         Time.timeScale =1f;
@@ -28,7 +29,7 @@ public class PauseMenu : MonoBehaviour
         }
         if(changeHitKeyPressed) {
             if(Input.anyKeyDown) {
-              if(PlayerControl.getHitKey() != Input.inputString) {
+              if(PlayerControl.getHitKey() != Input.inputString && PlayerControl.getPlaceKey() != Input.inputString) {
                 changeHitKeyPressed = false; 
                 PlayerControl.setHitKey(Input.inputString);
                 blackscreen.SetActive(false);
@@ -37,9 +38,18 @@ public class PauseMenu : MonoBehaviour
         }
         if(changeCameraKeyPressed) {
             if(Input.anyKeyDown) {
-               if(PlayerControl.getCameraKey() != Input.inputString) {
+               if(PlayerControl.getCameraKey() != Input.inputString && PlayerControl.getPlaceKey() != Input.inputString) {
                changeCameraKeyPressed = false; 
                PlayerControl.setCameraKey(Input.inputString);
+               blackscreen.SetActive(false);
+               }
+            }
+        }
+        if(changePositionBallKeyPressed) {
+            if(Input.anyKeyDown) {
+               if(PlayerControl.getHitKey() != Input.inputString && PlayerControl.getCameraKey() != Input.inputString) {
+               changePositionBallKeyPressed = false; 
+               PlayerControl.setPlaceKey(Input.inputString);
                blackscreen.SetActive(false);
                }
             }
@@ -73,5 +83,8 @@ public class PauseMenu : MonoBehaviour
     }
     public void Save() {
         SaveSystem.SaveData();
+    }
+    public void changePositionBallKey() {
+        changePositionBallKeyPressed = true;
     }
 }

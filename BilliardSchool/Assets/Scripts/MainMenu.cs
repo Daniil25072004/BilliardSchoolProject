@@ -9,8 +9,10 @@ public class MainMenu : MonoBehaviour
 {
     private string hitKey = "b";
     private string cameraKey = "a";
+    private string placeKey = "space";
     private bool changeHitKeyPressed = false;
     private bool changeCameraKeyPressed = false;
+    private bool changePositionBallKeyPressed = false;
     public GameObject blackscreen;
     public AudioMixer audio;
     public Slider volumeBar;
@@ -36,13 +38,14 @@ public class MainMenu : MonoBehaviour
         PlayerControl.setVolume(data.volume);
         PlayerControl.setCameraKey(data.cameraKey);
         PlayerControl.setHitKey(data.hitkey);
+        PlayerControl.setPlaceKey(data.placeKey);
     }
     void Update() {
         volumeBar.value = PlayerControl.getVolume();
         audio.SetFloat("Volume", PlayerControl.getVolume());
         if(changeHitKeyPressed) {
             if(Input.anyKeyDown) {
-              if(cameraKey != Input.inputString) {
+              if(cameraKey != Input.inputString && placeKey != Input.inputString) {
                 hitKey = Input.inputString;
                 changeHitKeyPressed = false; 
                 PlayerControl.setHitKey(hitKey);
@@ -53,7 +56,7 @@ public class MainMenu : MonoBehaviour
         }
         if(changeCameraKeyPressed) {
             if(Input.anyKeyDown) {
-               if(hitKey != Input.inputString) {
+               if(hitKey != Input.inputString && placeKey != Input.inputString) {
                cameraKey = Input.inputString;
                changeCameraKeyPressed = false; 
                PlayerControl.setCameraKey(cameraKey);
@@ -62,12 +65,17 @@ public class MainMenu : MonoBehaviour
                }
             }
         }
-    }
-    public string getHitKey() {
-        return hitKey;
-    }
-    public string getCameraKey() {
-        return cameraKey;
+        if(changePositionBallKeyPressed) {
+            if(Input.anyKeyDown) {
+               if(hitKey != Input.inputString && cameraKey != Input.inputString) {
+               placeKey = Input.inputString;
+               changePositionBallKeyPressed = false; 
+               PlayerControl.setPlaceKey(placeKey);
+               blackscreen.SetActive(false);
+               Debug.Log("Key: " + placeKey + " pressed");
+               }
+            }
+        }
     }
     public void Play(int pBestOf) {
         PlayerControl.setBestOf(pBestOf);
@@ -91,6 +99,9 @@ public class MainMenu : MonoBehaviour
     }
     public void ChangeCameraKey() {
         changeCameraKeyPressed = true;
+    }
+    public void ChangePositionBallKey() {
+        changePositionBallKeyPressed = true;
     }
     public void SetVolume(float pVolume) {
         audio.SetFloat("Volume", pVolume);
