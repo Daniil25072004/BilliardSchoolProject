@@ -6,10 +6,9 @@ public class PlayerControl : MonoBehaviour
 {
     private static string hitKey = "b";
     private static string cameraKey = "a";
+    private static string placeKey = "space";
     private static int bestOf;
     private static float volume = 0;
-    private bool changeHitKeyPressed = false;
-    private bool changeCameraKeyPressed = false;
     public static void setHitKey(string s){
         hitKey = s;
     }
@@ -28,6 +27,12 @@ public class PlayerControl : MonoBehaviour
     }
     public static string getCameraKey(){
         return cameraKey;
+    }
+    public static void setPlaceKey(string s){
+        placeKey = s;
+    }
+    public static string getPlaceKey(){
+        return placeKey;
     }
     public static void setBestOf(int pBestOf) {
         bestOf = pBestOf;

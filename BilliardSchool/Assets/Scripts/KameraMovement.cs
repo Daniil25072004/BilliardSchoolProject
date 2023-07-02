@@ -33,6 +33,7 @@ public class KameraMovement : MonoBehaviour
     public void forceCameraMode(int m){
         mode = m;
         isAllowedToChangePerspective = false;
+        Debug.Log("KAMERA: not allowed to change perspektive");
     }
     public void allowChangeOfPerspective(){
         isAllowedToChangePerspective = true;
@@ -132,8 +133,6 @@ public class KameraMovement : MonoBehaviour
 
     public void playerDecidesBallPosition(){
         mode = 0;
-        CameraAsBirdsEye();
-        gameplayManager_script.constrainAllBalls(true);
         isAllowedToChangePerspective = false;
         isPlayerDecidingBallPosition = true;
     }

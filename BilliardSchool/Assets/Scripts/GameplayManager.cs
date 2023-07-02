@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 using UnityEngine;
+using TMPro;
 
 public class GameplayManager : MonoBehaviour
 {
@@ -44,6 +45,10 @@ public class GameplayManager : MonoBehaviour
     //0 = 8pool ball, 1 = snooker
     //Es geht bei den Table Sizes um die innere Spielflächen und sie sind in cm angegeben. X ist die width und Z die Length
     private Vector3 table_vonInsideZuGesScale = new Vector3(1.194458f, 1f, 1.09678f);
+
+    //Diese zwei Objekte zeigen den Punktestand und in welcher Runde gerade gespielt wird.
+    private TMP_Text[] pointsCounter = new TMP_Text[2];
+    private TMP_Text roundsCounter;
 
     public Vector3 getBallSize(int idx){
         return ballSize[idx];
@@ -211,6 +216,12 @@ public class GameplayManager : MonoBehaviour
         return correctForm;
     }
     //idx 0 = white; idx 1 = black; Der Wert -1 bedeutet, dass die Kugel garnicht drinnen ist. Ansonsten ist der rauskommende Wert ein index für die Position im playerBall_holed der Kugel.
+    
+    private void refreshTextBoxes(){
+        roundsCounter.text = "Round: " + round;
+        pointsCounter[0].text = playerPoints[0]+"";
+        pointsCounter[1].text = playerPoints[1]+"";
+    }
     private int[] getWhiteAndBlackIdxInArray(int pPlayerTurn){
         int[] whiteAndBlack = new int[2];
         int whiteIdx = -1;
@@ -638,7 +649,9 @@ public class GameplayManager : MonoBehaviour
         poolTable_script.setSize(0);
 
         cameraMovement_script = GameObject.Find("Main Camera").GetComponent<KameraMovement>();
-
+        roundsCounter = GameObject.Find("Round Counter").GetComponent<TMP_Text>();
+        pointsCounter[0] = GameObject.Find("Points Counter_p0").GetComponent<TMP_Text>();
+        pointsCounter[1] = GameObject.Find("Points Counter_p1").GetComponent<TMP_Text>();
         for (int i = 0; i < 16; i++)
         {
             balls_8ball[i].localScale = ballSize[0];
@@ -781,12 +794,15 @@ public class GameplayManager : MonoBehaviour
                     }
                 }
                 else{
-                    firstBallHit = null;
-                    if(containsWhiteBall == false) playerIsAllowedToMove = true;
-                    cameraMovement_script.allowChangeOfPerspective();
-                    Debug.Log("Nächster zug, es ist Spieler " + playerTurn + " dran.");
+                    if(playerIsPlacingBall == false){
+                        firstBallHit = null;
+                        if(containsWhiteBall == false) playerIsAllowedToMove = true;
+                        cameraMovement_script.allowChangeOfPerspective();
+                        Debug.Log("Nächster zug, es ist Spieler " + playerTurn + " dran.");
+                    }
                 }
             }
         }
+        refreshTextBoxes();
     }
 }
