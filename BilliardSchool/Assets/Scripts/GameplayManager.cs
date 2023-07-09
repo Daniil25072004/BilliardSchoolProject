@@ -49,9 +49,10 @@ public class GameplayManager : MonoBehaviour
     public GameObject winMenu;
     public TMP_Text titleWinMenu;
     public GameObject gameScene;
-    //Diese zwei Objekte zeigen den Punktestand und in welcher Runde gerade gespielt wird.
+    //Diese drei Objekte zeigen den Punktestand, in welcher Runde gerade gespielt wird und welcher Spieler welche Form anspielt.
     private TMP_Text[] pointsCounter = new TMP_Text[2];
     private TMP_Text roundsCounter;
+    private TMP_Text[] formShower = new TMP_Text[2];
 
     //Dieses Objekt stellt die leuchtende Farbe der Kugel ein
     private Bloom whiteBall_bloom;
@@ -234,6 +235,21 @@ public class GameplayManager : MonoBehaviour
         roundsCounter.text = "Round: " + round;
         pointsCounter[0].text = playerPoints[0]+"";
         pointsCounter[1].text = playerPoints[1]+"";
+        switch(playerBall_form[0]){
+            case 1:
+                formShower[0].text = "H";
+                formShower[1].text = "F";
+                break;
+            case 2:
+                formShower[0].text = "F";
+                formShower[1].text = "H";
+                break;
+            default:
+            formShower[0].text = "-";
+            formShower[1].text = "-";
+                break;
+        }
+        
     }
     private int[] getWhiteAndBlackIdxInArray(int pPlayerTurn){
         int[] whiteAndBlack = new int[2];
@@ -353,7 +369,6 @@ public class GameplayManager : MonoBehaviour
         } else {
             titleWinMenu.text = "Player 1 has Won!"; 
         }
-        Time.timeScale = 0f;
     }
     private void eightBall_resetGameLogic(){
         //Wer fängt an?
@@ -670,7 +685,9 @@ public class GameplayManager : MonoBehaviour
         cameraMovement_script = GameObject.Find("Main Camera").GetComponent<KameraMovement>();
         roundsCounter = GameObject.Find("Round Counter").GetComponent<TMP_Text>();
         pointsCounter[0] = GameObject.Find("Points Counter_p0").GetComponent<TMP_Text>();
+        formShower[0] = GameObject.Find("Form Shower_p0").GetComponent<TMP_Text>();
         pointsCounter[1] = GameObject.Find("Points Counter_p1").GetComponent<TMP_Text>();
+        formShower[1] = GameObject.Find("Form Shower_p1").GetComponent<TMP_Text>();
 
         if(GameObject.Find("Main Camera").GetComponent<PostProcessVolume>().profile.TryGetSettings(out whiteBall_bloom)){
             Debug.Log("Es geht wtf");

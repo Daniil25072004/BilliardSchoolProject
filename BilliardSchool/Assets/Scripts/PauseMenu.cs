@@ -89,6 +89,7 @@ public class PauseMenu : MonoBehaviour
         changePositionBallKeyPressed = true;
     }
     public void playAgain() {
+        Time.timeScale = 1f;
         SceneManager.LoadScene(0);
     }
     public void quitApplication() {
