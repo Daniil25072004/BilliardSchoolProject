@@ -10,6 +10,7 @@ public class PauseMenu : MonoBehaviour
     public static bool paused = false;
     public GameObject PauseCanvas;
     public GameObject blackscreen;
+    public GameObject winMenu;
     private bool changeHitKeyPressed = false;
     private bool changeCameraKeyPressed = false;
     private bool changePositionBallKeyPressed = false;
@@ -20,7 +21,7 @@ public class PauseMenu : MonoBehaviour
     void Update() {
         volumeBar.value = PlayerControl.getVolume();
         audio.SetFloat("Volume", PlayerControl.getVolume());
-        if(Input.GetKeyDown(KeyCode.Escape)) {
+        if(Input.GetKeyDown(KeyCode.Escape) && winMenu.activeSelf == false) {
             if(paused) {
                 play();
             } else {
@@ -86,5 +87,11 @@ public class PauseMenu : MonoBehaviour
     }
     public void changePositionBallKey() {
         changePositionBallKeyPressed = true;
+    }
+    public void playAgain() {
+        SceneManager.LoadScene(0);
+    }
+    public void quitApplication() {
+        Application.Quit();
     }
 }

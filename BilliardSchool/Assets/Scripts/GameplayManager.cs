@@ -46,7 +46,9 @@ public class GameplayManager : MonoBehaviour
     //0 = 8pool ball, 1 = snooker
     //Es geht bei den Table Sizes um die innere Spielflächen und sie sind in cm angegeben. X ist die width und Z die Length
     private Vector3 table_vonInsideZuGesScale = new Vector3(1.194458f, 1f, 1.09678f);
-
+    public GameObject winMenu;
+    public TMP_Text titleWinMenu;
+    public GameObject gameScene;
     //Diese zwei Objekte zeigen den Punktestand und in welcher Runde gerade gespielt wird.
     private TMP_Text[] pointsCounter = new TMP_Text[2];
     private TMP_Text roundsCounter;
@@ -119,7 +121,7 @@ public class GameplayManager : MonoBehaviour
             case 0:
                 round = 1;
                 playerPoints = new int[] {0, 0};
-                bestOf = 3;
+                bestOf = PlayerControl.getBestOf();
                 eightBall_resetBallPosition();
                 eightBall_resetGameLogic();
                 refreshBallColor();
@@ -345,7 +347,13 @@ public class GameplayManager : MonoBehaviour
         playerIsAllowedToMove = false;
         eightBall_resetBallPosition();
         constrainAllBalls(true);
-        //zurück ins hauptmenü?
+        winMenu.SetActive(true);
+        if(player == 0) {
+            titleWinMenu.text = "Player 2 has Won!";
+        } else {
+            titleWinMenu.text = "Player 1 has Won!"; 
+        }
+        Time.timeScale = 0f;
     }
     private void eightBall_resetGameLogic(){
         //Wer fängt an?
