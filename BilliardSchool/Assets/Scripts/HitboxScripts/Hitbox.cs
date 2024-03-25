@@ -82,8 +82,6 @@ public class Hitbox : MonoBehaviour
             default:
                 Debug.Log("!!!  Kontakt mit Hitbox + " + number + ", aber unbekannt mit welchem Ball.");
                 break;
-
-
         }
     }
 }
